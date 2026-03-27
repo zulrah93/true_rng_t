@@ -1,0 +1,1 @@
+clang++-19 example/main.cpp -o bin/true_rng_example -cxx-isysteminclude -Wall --std=c++23 -DDEBUG $1 $2
