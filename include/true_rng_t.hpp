@@ -17,10 +17,10 @@ public:
         m_next_random_value = get_new_seed();
     }
     static constexpr bool rdseed64_instruction_supported() {
-        int32_t eax = 7;
-        int32_t ebx;
-        int32_t ecx = 0;
-        int32_t edx = 0;
+        int32_t eax{7};
+        int32_t ebx{0};
+        int32_t ecx{0};
+        int32_t edx{0};
         __cpuid(0, eax, ebx, ecx, edx); 
         return (ebx & (1 << 18)) != 0; // If bit 18th is set then RDSEED is supported
     }
@@ -30,19 +30,17 @@ public:
         if (m_counter_to_reseed > 0 && 
                 (m_reseed_rate == 0 || ((m_counter_to_reseed % m_reseed_rate) == 0))) {
             m_next_random_value = get_new_seed();
-            m_counter_to_reseed++;
-            return m_next_random_value;
         }
         m_counter_to_reseed++;
         //Source: https://wiki.osdev.org/Random_Number_Generator#x86_RDSEED_Instruction
         m_next_random_value = (m_next_random_value * 1103515245) + 12345;
-        return (m_next_random_value / 65536) % std::numeric_limits<size_t>::max();
+        return ((m_next_random_value / 65536) % std::numeric_limits<size_t>::max());
     }
 
 
 private:
     static constexpr size_t get_new_seed() {
-        size_t temp_random_value = 0;
+        size_t temp_random_value{420};
         asm ("rdseed %0; " :"=r"(temp_random_value));
         return temp_random_value;
     }
