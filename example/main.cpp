@@ -2,9 +2,12 @@
 #include <iostream>
 
 int main(int argument_count, char** arguments) {
-    true_rng_t rng(1ul);
-    for(size_t _ = 0; _ < 100000000; _++) {
-        //std::cout << rng.next_random_value() << " ";
+    true_rng_t rng(10ul);
+    for(size_t iteration = 0; iteration < 100; iteration++) {
+        std::cout << rng.next_random_value() << " ";
+        if (iteration > 0 && ((iteration % 10) == 0)) {
+            std::cout << std::endl;
+        }
     }
     std::cout << std::endl;
     return 0;

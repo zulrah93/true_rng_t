@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <cstdint>
+#include <limits>
 #include "/usr/lib/gcc/x86_64-linux-gnu/15/include/cpuid.h"
 
 // Purpose exploit the fact that x86 has an instruction to generate random from environment might have some performance implications
@@ -26,24 +27,27 @@ public:
 
     size_t next_random_value() {
         [[unlinkely]]
-        if (m_reseed_counter == m_reseed_rate) {
+        if (m_counter_to_reseed > 0 && 
+                (m_reseed_rate == 0 || ((m_counter_to_reseed % m_reseed_rate) == 0))) {
             m_next_random_value = get_new_seed();
+            m_counter_to_reseed++;
             return m_next_random_value;
         }
+        m_counter_to_reseed++;
         //Source: https://wiki.osdev.org/Random_Number_Generator#x86_RDSEED_Instruction
-        m_next_random_value = m_next_random_value * 1103515245 + 12345;
-        return (unsigned int) (m_next_random_value / 65536) % 32768;
+        m_next_random_value = (m_next_random_value * 1103515245) + 12345;
+        return (m_next_random_value / 65536) % std::numeric_limits<size_t>::max();
     }
 
 
 private:
     static constexpr size_t get_new_seed() {
-        uint64_t temp_random_value = 0;
+        size_t temp_random_value = 0;
         asm ("rdseed %0; " :"=r"(temp_random_value));
         return temp_random_value;
     }
     size_t m_reseed_rate{0};
-    size_t m_reseed_counter{0};
+    size_t m_counter_to_reseed{0};
     size_t m_next_random_value{0};
 };
 
