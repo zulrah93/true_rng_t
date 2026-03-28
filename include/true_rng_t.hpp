@@ -13,6 +13,8 @@ public:
     true_rng_t() : m_reseed_rate{0} {
         m_next_random_value = get_new_seed();
     }
+    
+    //reseed_rate a higher value trades true randomness for faster pseudo if you want to have every new random value be from rdseed use a 0 or 1 as rate
     true_rng_t(size_t reseed_rate) : m_reseed_rate{reseed_rate} {
         m_next_random_value = get_new_seed();
     }
@@ -35,6 +37,14 @@ public:
         //Source: https://wiki.osdev.org/Random_Number_Generator#x86_RDSEED_Instruction
         m_next_random_value = (m_next_random_value * 1103515245) + 12345;
         return ((m_next_random_value / 65536) % std::numeric_limits<size_t>::max());
+    }
+
+    size_t operator()() {
+        return next_random_value();
+    }
+
+    constexpr const size_t get_reseeed_rate() {
+        return m_reseed_rate;
     }
 
 
