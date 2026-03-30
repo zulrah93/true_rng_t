@@ -18,6 +18,11 @@ int main(int argument_count, char** arguments) {
         std::string reseed_rate_string{arguments[2]};
         std::from_chars(reseed_rate_string.data(), reseed_rate_string.data() + reseed_rate_string.size(), reseed_rate);
     }
+    bool print{false};
+    if (argument_count > 3) {
+        std::string command{arguments[3]};
+        print = command == "print";
+    }
     
     bool rdseed_supported{true_rng_t::rdseed64_instruction_supported()};
     std::cout << "Is RDSEED64 supported? " << (rdseed_supported ? "yes" : "no") << std::endl;
@@ -27,9 +32,13 @@ int main(int argument_count, char** arguments) {
     auto start = std::chrono::steady_clock().now();
     true_rng_t rng(reseed_rate);
     for(size_t iteration = 0; iteration < max_iteration_count; iteration++) {
-        rng();
+        auto rand_value = rng();
+        [[unlikely]]
+        if (print) {
+            std::cout <<  rand_value << ((iteration > 0 && (iteration % 10 == 0)) ? "\n" : " ");
+        }
     }
-    std::cout << "Did " << max_iteration_count 
+    std::cout << "\nDid " << max_iteration_count
                 << " RDSEED64 instruction(s) in " 
                 <<  std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::steady_clock().now() - start).count() 
                 << " millisecond(s)" << " with a reseed rate of 1 in " << reseed_rate << std::endl;

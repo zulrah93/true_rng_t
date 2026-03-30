@@ -11,12 +11,12 @@
 class true_rng_t {
 public:
     true_rng_t() : m_reseed_rate{0} {
-        m_next_random_value = get_new_seed();
+        while (!get_new_seed(m_next_random_value)) {}
     }
     
     //reseed_rate a higher value trades true randomness for faster pseudo if you want to have every new random value be from rdseed use a 0 or 1 as rate
     true_rng_t(size_t reseed_rate) : m_reseed_rate{reseed_rate} {
-        m_next_random_value = get_new_seed();
+        while (!get_new_seed(m_next_random_value)) {}
     }
     static constexpr bool rdseed64_instruction_supported() {
         int32_t eax{7};
@@ -31,7 +31,7 @@ public:
         [[unlinkely]]
         if (m_counter_to_reseed > 0 && 
                 (m_reseed_rate == 0 || ((m_counter_to_reseed % m_reseed_rate) == 0))) {
-            m_next_random_value = get_new_seed();
+             while (!get_new_seed(m_next_random_value)) {}
         }
         m_counter_to_reseed++;
         //Source: https://wiki.osdev.org/Random_Number_Generator#x86_RDSEED_Instruction
@@ -47,12 +47,21 @@ public:
         return m_reseed_rate;
     }
 
-
 private:
-    static constexpr size_t get_new_seed() {
-        size_t temp_random_value{420};
-        asm ("rdseed %0; " :"=r"(temp_random_value));
-        return temp_random_value;
+    static constexpr bool get_new_seed(size_t& seed) {
+        size_t temp_random_value{0};
+        int got_carried{0};
+
+        asm ("rdseed %0; "
+            :"=r"(temp_random_value),
+            "=@ccc"(got_carried));
+
+        if ((1 == (got_carried & 1))) {
+            seed = temp_random_value;
+            return true;
+        }
+
+        return false;
     }
     size_t m_reseed_rate{0};
     size_t m_counter_to_reseed{0};
