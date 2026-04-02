@@ -5,6 +5,8 @@
 
 int main(int argument_count, char** arguments) {
 
+    std::cout << "cpp version is " << __cplusplus << std::endl;
+
     size_t max_iteration_count{1000000};
     size_t reseed_rate{1};
     if (argument_count > 1) {
@@ -32,7 +34,7 @@ int main(int argument_count, char** arguments) {
     auto start = std::chrono::steady_clock().now();
     true_rng_t rng(reseed_rate);
     for(size_t iteration = 0; iteration < max_iteration_count; iteration++) {
-        auto rand_value = rng();
+        auto rand_value = *rng;
         [[unlikely]]
         if (print) {
             std::cout <<  rand_value << ((iteration > 0 && (iteration % 10 == 0)) ? "\n" : " ");
