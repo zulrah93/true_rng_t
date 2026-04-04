@@ -1,5 +1,5 @@
 #ifndef TRUE_RNG_T_HPP
-#define TRUE_RNG_T_HPP'
+#define TRUE_RNG_T_HPP
 
 #include <vector>
 #include <cstring>
